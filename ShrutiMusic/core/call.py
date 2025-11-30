@@ -1,3 +1,25 @@
+# Copyright (c) 2025 Nand Yaduwanshi <NoxxOP>
+# Location: Supaul, Bihar
+#
+# All rights reserved.
+#
+# This code is the intellectual property of Nand Yaduwanshi.
+# You are not allowed to copy, modify, redistribute, or use this
+# code for commercial or personal projects without explicit permission.
+#
+# Allowed:
+# - Forking for personal learning
+# - Submitting improvements via pull requests
+#
+# Not Allowed:
+# - Claiming this code as your own
+# - Re-uploading without credit or permission
+# - Selling or using commercially
+#
+# Contact for permissions:
+# Email: badboy809075@gmail.com
+
+
 import asyncio
 import os
 from datetime import datetime, timedelta
@@ -35,7 +57,7 @@ from ShrutiMusic.utils.exceptions import AssistantErr
 from ShrutiMusic.utils.formatters import check_duration, seconds_to_min, speed_converter
 from ShrutiMusic.utils.inline.play import stream_markup
 from ShrutiMusic.utils.stream.autoclear import auto_clean
-from ShrutiMusic.utils.thumbnails import get_thumb
+from ShrutiMusic.utils.thumbnails import gen_thumb
 from strings import get_string
 
 autoend = {}
@@ -51,7 +73,7 @@ async def _clear_(chat_id):
 class Call(PyTgCalls):
     def __init__(self):
         self.userbot1 = Client(
-            name="devineAss1",
+            name="NandAss1",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING1),
@@ -61,7 +83,7 @@ class Call(PyTgCalls):
             cache_duration=100,
         )
         self.userbot2 = Client(
-            name="devineAss2",
+            name="NandAss2",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING2),
@@ -71,7 +93,7 @@ class Call(PyTgCalls):
             cache_duration=100,
         )
         self.userbot3 = Client(
-            name="devineAss3",
+            name="NandAss3",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING3),
@@ -81,7 +103,7 @@ class Call(PyTgCalls):
             cache_duration=100,
         )
         self.userbot4 = Client(
-            name="devineAss4",
+            name="NandAss4",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING4),
@@ -91,7 +113,7 @@ class Call(PyTgCalls):
             cache_duration=100,
         )
         self.userbot5 = Client(
-            name="devineAss5",
+            name="NandAss5",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING5),
@@ -271,14 +293,14 @@ class Call(PyTgCalls):
         await assistant.change_stream(chat_id, stream)
 
     async def stream_call(self, link):
-        assistant = await group_assistant(self, config.LOGGER_ID)
+        assistant = await group_assistant(self, config.LOG_GROUP_ID)
         await assistant.join_group_call(
-            config.LOGGER_ID,
+            config.LOG_GROUP_ID,
             AudioVideoPiped(link),
             stream_type=StreamType().pulse_stream,
         )
         await asyncio.sleep(0.2)
-        await assistant.leave_group_call(config.LOGGER_ID)
+        await assistant.leave_group_call(config.LOG_GROUP_ID)
 
     async def join_call(
         self,
@@ -291,40 +313,22 @@ class Call(PyTgCalls):
         assistant = await group_assistant(self, chat_id)
         language = await get_lang(chat_id)
         _ = get_string(language)
-
-        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        # Special case: play fixed MP4 on /start
-        # Call this by passing link="start_video" and video=True from your /start handler.
-        if str(link) == "start_video":
-            mp4_url = getattr(
-                config,
-                "STARTUP_VIDEO",
-                "https://files.catbox.moe/o0sd2t.mp4",  # fallback if not set in config.py
-            )
+        if video:
             stream = AudioVideoPiped(
-                mp4_url,
+                link,
                 audio_parameters=HighQualityAudio(),
                 video_parameters=MediumQualityVideo(),
             )
-        # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
         else:
-            if video:
-                stream = AudioVideoPiped(
+            stream = (
+                AudioVideoPiped(
                     link,
                     audio_parameters=HighQualityAudio(),
                     video_parameters=MediumQualityVideo(),
                 )
-            else:
-                stream = (
-                    AudioVideoPiped(
-                        link,
-                        audio_parameters=HighQualityAudio(),
-                        video_parameters=MediumQualityVideo(),
-                    )
-                    if video
-                    else AudioPiped(link, audio_parameters=HighQualityAudio())
-                )
+                if video
+                else AudioPiped(link, audio_parameters=HighQualityAudio())
+            )
         try:
             await assistant.join_group_call(
                 chat_id,
@@ -409,7 +413,7 @@ class Call(PyTgCalls):
                         original_chat_id,
                         text=_["call_6"],
                     )
-                img = await get_thumb(videoid)
+                img = await gen_thumb(videoid)
                 button = stream_markup(_, chat_id)
                 run = await app.send_photo(
                     chat_id=original_chat_id,
@@ -455,7 +459,7 @@ class Call(PyTgCalls):
                         original_chat_id,
                         text=_["call_6"],
                     )
-                img = await get_thumb(videoid)
+                img = await gen_thumb(videoid)
                 button = stream_markup(_, chat_id)
                 await mystic.delete()
                 run = await app.send_photo(
@@ -524,7 +528,7 @@ class Call(PyTgCalls):
                         if str(streamtype) == "audio"
                         else config.TELEGRAM_VIDEO_URL,
                         caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                            config.SUPPORT_GROUP, title[:23], check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
                     )
@@ -536,14 +540,14 @@ class Call(PyTgCalls):
                         chat_id=original_chat_id,
                         photo=config.SOUNCLOUD_IMG_URL,
                         caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                            config.SUPPORT_GROUP, title[:23], check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
                     )
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "tg"
                 else:
-                    img = await get_thumb(videoid)
+                    img = await gen_thumb(videoid)
                     button = stream_markup(_, chat_id)
                     run = await app.send_photo(
                         chat_id=original_chat_id,
@@ -616,4 +620,16 @@ class Call(PyTgCalls):
             await self.change_stream(client, update.chat_id)
 
 
-ShrutiMusic = Call()
+Nand = Call()
+
+
+# ©️ Copyright Reserved - @NoxxOP  Nand Yaduwanshi
+
+# ===========================================
+# ©️ 2025 Nand Yaduwanshi (aka @NoxxOP)
+# 🔗 GitHub : https://github.com/NoxxOP/ShrutiMusic
+# 📢 Telegram Channel : https://t.me/ShrutiBots
+# ===========================================
+
+
+# ❤️ Love From ShrutiBots 
