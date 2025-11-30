@@ -29,7 +29,7 @@ def clear(text):
     return title.strip()
 
 
-async def get_thumb(videoid):
+async def gen_thumb(videoid):
     if os.path.isfile(f"cache/{videoid}.png"):
         return f"cache/{videoid}.png"
 
@@ -43,15 +43,19 @@ async def get_thumb(videoid):
                 title = title.title()
             except:
                 title = "Unsupported Title"
+
             try:
                 duration = result["duration"]
             except:
                 duration = "Unknown Mins"
+
             thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+
             try:
                 views = result["viewCount"]["short"]
             except:
                 views = "Unknown Views"
+
             try:
                 channel = result["channel"]["name"]
             except:
@@ -67,55 +71,33 @@ async def get_thumb(videoid):
         youtube = Image.open(f"cache/thumb{videoid}.png")
         image1 = changeImageSize(1280, 720, youtube)
         image2 = image1.convert("RGBA")
+
         background = image2.filter(filter=ImageFilter.BoxBlur(10))
         enhancer = ImageEnhance.Brightness(background)
         background = enhancer.enhance(0.5)
+
         draw = ImageDraw.Draw(background)
         arial = ImageFont.truetype("ShrutiMusic/assets/font2.ttf", 30)
         font = ImageFont.truetype("ShrutiMusic/assets/font.ttf", 30)
+
         draw.text((1110, 8), unidecode(app.name), fill="white", font=arial)
-        draw.text(
-            (55, 560),
-            f"{channel} | {views[:23]}",
-            (255, 255, 255),
-            font=arial,
-        )
-        draw.text(
-            (57, 600),
-            clear(title),
-            (255, 255, 255),
-            font=font,
-        )
-        draw.line(
-            [(55, 660), (1220, 660)],
-            fill="white",
-            width=5,
-            joint="curve",
-        )
-        draw.ellipse(
-            [(918, 648), (942, 672)],
-            outline="white",
-            fill="white",
-            width=15,
-        )
-        draw.text(
-            (36, 685),
-            "00:00",
-            (255, 255, 255),
-            font=arial,
-        )
-        draw.text(
-            (1185, 685),
-            f"{duration[:23]}",
-            (255, 255, 255),
-            font=arial,
-        )
+        draw.text((55, 560), f"{channel} | {views[:23]}", (255, 255, 255), font=arial)
+        draw.text((57, 600), clear(title), (255, 255, 255), font=font)
+
+        draw.line([(55, 660), (1220, 660)], fill="white", width=5, joint="curve")
+        draw.ellipse([(918, 648), (942, 672)], outline="white", fill="white", width=15)
+
+        draw.text((36, 685), "00:00", (255, 255, 255), font=arial)
+        draw.text((1185, 685), f"{duration[:23]}", (255, 255, 255), font=arial)
+
         try:
             os.remove(f"cache/thumb{videoid}.png")
         except:
             pass
+
         background.save(f"cache/{videoid}.png")
         return f"cache/{videoid}.png"
+
     except Exception as e:
         print(e)
         return YOUTUBE_IMG_URL
